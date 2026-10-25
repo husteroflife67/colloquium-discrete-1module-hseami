@@ -29,9 +29,13 @@ import {
   GraduationCap,
   Clock3,
   Route,
+  Cloud,
 } from "lucide-react";
+import { assetUrl } from "./asset-url";
 import { MathText } from "./RichText";
 import { PracticeLibrary, ProofTicket, PracticeProgress } from "./Practice";
+import { SyncProvider, SyncSettings, SyncBadge } from "./Sync";
+import { saveProgress, useProgressReload } from "./progress-events";
 import { PreparationPlan } from "./PreparationPlan";
 import type { PlanTarget } from "./plan-model";
 import "katex/dist/katex.min.css";
@@ -49,7 +53,8 @@ import {
   type Result,
 } from "./model";
 type Question = (typeof course.questions)[number];
-type Page = "course" | "review" | "ticket" | "progress" | "proofs" | "plan";
+type Page =
+  "course" | "review" | "ticket" | "progress" | "proofs" | "plan" | "sync";
 const statusNames: Record<Status, string> = {
   new: "Не изучал",
   learning: "Изучаю",
@@ -70,6 +75,7 @@ function App() {
     }
   });
   const [saved, setSaved] = useState<Saved>(initial.saved);
+  useProgressReload(storageKey, readSaved, setSaved);
   const [warning, setWarning] = useState(initial.error);
   const [ticketMode, setTicketMode] = useState<"theory" | "proof">("theory");
   const [page, setPage] = useState<Page>("course");
@@ -93,7 +99,7 @@ function App() {
   function persist(next: Saved) {
     setSaved(next);
     try {
-      localStorage.setItem(storageKey, JSON.stringify(next));
+      saveProgress(storageKey, next, saved);
       setWarning("");
     } catch {
       setWarning(
@@ -249,7 +255,7 @@ function App() {
       </p>
       <a
         className="source"
-        href={`/materials/DMlec-base.pdf#page=${q.sourcePage}`}
+        href={assetUrl(`/materials/DMlec-base.pdf#page=${q.sourcePage}`)}
         target="_blank"
         rel="noreferrer"
       >
@@ -295,6 +301,7 @@ function App() {
                 icon: ChartNoAxesCombined,
                 name: "Мой прогресс",
               },
+              { id: "sync", icon: Cloud, name: "Синхронизация" },
             ] as const
           ).map((n) => (
             <button
@@ -341,10 +348,7 @@ function App() {
           <div>
             ПМИ ФКН ВШЭ <span>/</span> Подготовка к коллоквиуму
           </div>
-          <span className="local-badge">
-            <span />
-            Прогресс на этом устройстве
-          </span>
+          <SyncBadge onOpen={() => navigate("sync")} />
         </header>
         <div className="content">
           {warning && (
@@ -380,7 +384,9 @@ function App() {
               <span>Просмотр не отмечает пункт выполненным</span>
             </div>
           )}
-          {page === "plan" ? (
+          {page === "sync" ? (
+            <SyncSettings />
+          ) : page === "plan" ? (
             <PreparationPlan
               onOpen={openPlanMaterial}
               initialFocusId={planFocus}
@@ -772,7 +778,7 @@ function App() {
                   </span>
                 </p>
                 <a
-                  href="/materials/colloq-base26f.pdf"
+                  href={assetUrl("/materials/colloq-base26f.pdf")}
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -1105,7 +1111,7 @@ function App() {
               <Braces size={16} /> дискретно <span>· Учиться понимать</span>
             </span>
             <a
-              href="/materials/DMlec-base.pdf"
+              href={assetUrl("/materials/DMlec-base.pdf")}
               target="_blank"
               rel="noreferrer"
             >
@@ -1119,6 +1125,8 @@ function App() {
 }
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <SyncProvider>
+      <App />
+    </SyncProvider>
   </React.StrictMode>,
 );

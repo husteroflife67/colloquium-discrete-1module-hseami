@@ -2954,3 +2954,333 @@ textarea::placeholder {
     font-size: 8px;
   }
 }
+/* Optional account sync: local study remains available before connection. */
+.sync-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  color: #7c9270;
+  text-align: left;
+}
+.sync-badge.sync-conflict,
+.sync-badge.sync-error {
+  color: #b08c62;
+}
+.sync-badge.sync-synced {
+  color: #658d50;
+}
+.sync-info-card {
+  display: flex;
+  gap: 22px;
+  align-items: center;
+  padding: 28px;
+  background: #e9eee1;
+  border: 1px solid #dfe7d5;
+  border-radius: 10px;
+  margin-bottom: 24px;
+  color: #7b9a66;
+}
+.sync-info-card h2 {
+  font-size: 23px;
+  color: #5d794c;
+  margin-bottom: 9px;
+}
+.sync-info-card p {
+  font-size: 12px;
+  color: #879a77;
+  margin: 0;
+  max-width: 760px;
+}
+.sync-account,
+.sync-login {
+  padding: 27px;
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 9px;
+  margin: 22px 0;
+}
+.sync-account {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+}
+.sync-account strong {
+  display: block;
+  color: #5e7c4d;
+  font-weight: 550;
+  margin: 12px 0;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+.sync-account .eyebrow {
+  color: #9aab8a;
+}
+.sync-account p {
+  color: #8c9d7d;
+  font-size: 12px;
+  margin: 0 0 10px;
+}
+.sync-account small {
+  display: block;
+  font-size: 10px;
+  color: #9ba88c;
+  margin-top: 7px;
+}
+.sync-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.sync-actions button {
+  font-size: 11px;
+}
+.sync-login {
+  max-width: 670px;
+}
+.sync-login h2 {
+  margin-bottom: 10px;
+}
+.sync-login p {
+  font-size: 12px;
+  color: #90a07f;
+}
+.sync-login label {
+  display: block;
+  color: #7d936c;
+  font-size: 12px;
+  margin-bottom: 9px;
+}
+.sync-login input {
+  padding: 12px 15px;
+  border: 1px solid #dce4d3;
+  border-radius: 6px;
+  width: 100%;
+  margin-bottom: 17px;
+  font-size: 13px;
+  background: #fcfdf9;
+  color: #597348;
+}
+.sync-login .primary {
+  font-size: 12px;
+}
+.sync-conflicts {
+  margin: 30px 0;
+}
+.sync-conflict {
+  padding: 20px;
+  border: 1px solid #e8d5b7;
+  border-radius: 7px;
+  margin-bottom: 13px;
+  background: #fffdf7;
+}
+.sync-conflict h3 {
+  font-size: 12px;
+  color: #9d885e;
+  line-height: 1.9;
+}
+.sync-conflict > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.sync-conflict button {
+  font-size: 11px;
+  line-height: 1.6;
+  text-align: left;
+}
+.sync-backup {
+  display: flex;
+  gap: 16px;
+  padding: 23px;
+  border: 1px solid #e1e7d7;
+  background: #f0f4e9;
+  border-radius: 8px;
+  margin-top: 25px;
+  color: #8b9f77;
+}
+.sync-backup h3 {
+  font-size: 14px;
+  color: #7c9468;
+  margin-bottom: 9px;
+}
+.sync-backup p {
+  font-size: 11px;
+  margin-bottom: 15px;
+  max-width: 760px;
+}
+.sync-settings > .notice > p {
+  font-size: 12px;
+  margin: 8px 0 0;
+}
+.sync-settings > .success {
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 20px 0;
+  align-items: flex-start;
+}
+.sidebar nav {
+  flex-shrink: 0;
+}
+@media (max-width: 850px) {
+  .sync-account {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .sync-actions {
+    align-items: flex-start;
+  }
+  .sync-info-card {
+    align-items: flex-start;
+    padding: 23px;
+  }
+  .sync-info-card h2 {
+    font-size: 21px;
+  }
+  .sync-info-card p {
+    font-size: 11px;
+  }
+  .sidebar {
+    overflow-y: auto;
+  }
+  .sidebar-bottom {
+    flex-shrink: 0;
+  }
+}
+@media (max-width: 640px) {
+  .sync-badge {
+    font-size: 9px;
+    padding-right: 40px;
+    max-width: 160px;
+  }
+  .sync-badge span {
+    display: none;
+  }
+  .sync-badge svg {
+    width: 17px;
+    height: 17px;
+  }
+  .sync-info-card {
+    gap: 13px;
+    padding: 19px;
+  }
+  .sync-info-card > svg {
+    width: 23px;
+  }
+  .sync-info-card h2 {
+    font-size: 19px;
+  }
+  .sync-info-card p {
+    font-size: 10px;
+  }
+  .sync-login,
+  .sync-account {
+    padding: 20px;
+  }
+  .sync-login p,
+  .sync-account p {
+    font-size: 11px;
+  }
+  .sync-login .primary {
+    font-size: 11px;
+  }
+  .sync-backup {
+    padding: 19px;
+    gap: 12px;
+  }
+  .sync-backup h3 {
+    font-size: 12px;
+  }
+  .sync-backup p {
+    font-size: 10px;
+  }
+  .sync-conflict {
+    padding: 16px;
+  }
+  .sync-settings > .success {
+    font-size: 11px;
+  }
+  .sync-settings > .notice > p {
+    font-size: 11px;
+  }
+}
+.sync-login-methods {
+  display: flex;
+  gap: 7px;
+  padding: 5px;
+  border-radius: 7px;
+  background: #f0f4e9;
+  width: fit-content;
+  margin: 15px 0;
+}
+.sync-login-methods button {
+  font-size: 11px;
+  padding: 9px 13px;
+  color: #8a9f76;
+  border-radius: 4px;
+}
+.sync-login-methods button.active {
+  background: #fff;
+  color: #65864f;
+  box-shadow: 0 1px 4px #52703c11;
+}
+.sync-password-settings {
+  border: 1px solid #e0e7d5;
+  border-radius: 7px;
+  background: #f8faf3;
+  padding: 20px;
+  margin: 20px 0;
+  color: #849a70;
+}
+.sync-password-settings summary {
+  cursor: pointer;
+  font-size: 12px;
+}
+.sync-password-settings p {
+  font-size: 11px;
+  margin: 12px 0;
+}
+.sync-password-settings label {
+  display: block;
+  font-size: 11px;
+  margin: 12px 0 7px;
+}
+.sync-password-settings input {
+  padding: 10px 12px;
+  border: 1px solid #dce5d1;
+  border-radius: 5px;
+  background: white;
+  max-width: 400px;
+  width: 100%;
+  display: block;
+  margin-bottom: 13px;
+}
+.sync-import {
+  border-top: 1px solid #dfe7d3;
+  margin-top: 20px;
+  padding-top: 17px;
+}
+.sync-import label {
+  display: block;
+  font-size: 11px;
+  margin-bottom: 12px;
+}
+.sync-import input {
+  font-size: 11px;
+  max-width: 100%;
+}
+.sync-import p {
+  font-size: 10px;
+  margin: 12px 0;
+}
+.sync-import input::file-selector-button {
+  border: 1px solid #d5dfca;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 4px;
+  color: #789665;
+  cursor: pointer;
+  margin-right: 10px;
+}

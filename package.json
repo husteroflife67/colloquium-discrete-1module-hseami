@@ -10,12 +10,14 @@
     "test": "playwright test"
   },
   "dependencies": {
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "@supabase/supabase-js": "^2.118.0",
     "katex": "^0.16.22",
-    "lucide-react": "^0.577.0"
+    "lucide-react": "^0.577.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.11",
     "@playwright/test": "^1.58.2",
     "@tailwindcss/vite": "^4.2.0",
     "@types/katex": "^0.16.8",

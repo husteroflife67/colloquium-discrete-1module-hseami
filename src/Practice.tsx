@@ -1,3 +1,5 @@
+import { assetUrl } from "./asset-url";
+import { saveProgress, useProgressReload } from "./progress-events";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -46,10 +48,11 @@ function usePractice() {
   });
   const [data, setData] = useState(initial.data);
   const [error, setError] = useState(initial.error);
+  useProgressReload(practiceKey, loadPractice, setData);
   function save(next: PracticeSaved) {
     setData(next);
     try {
-      localStorage.setItem(practiceKey, JSON.stringify(next));
+      saveProgress(practiceKey, next, data);
       setError("");
     } catch {
       setError(
@@ -87,7 +90,7 @@ function Source({ q }: { q: PracticeItem }) {
   return (
     <a
       className="source material-source"
-      href={q.sourceUrl}
+      href={assetUrl(q.sourceUrl)}
       target="_blank"
       rel="noreferrer"
     >
@@ -108,7 +111,7 @@ function Condition({ q }: { q: PracticeItem }) {
         {(q.originalImages ?? [q.originalImage]).map((src, i) => (
           <img
             key={src}
-            src={src}
+            src={assetUrl(src)}
             alt={`Оригинал условия ${q.number}${i ? " — продолжение" : ""}`}
             loading="lazy"
           />
@@ -262,7 +265,9 @@ function Solution({
               </p>
               <a
                 className="source"
-                href={`/materials/DMlec-base.pdf#page=${q.sourceProofPage ?? q.page}`}
+                href={assetUrl(
+                  `/materials/DMlec-base.pdf#page=${q.sourceProofPage ?? q.page}`,
+                )}
                 target="_blank"
                 rel="noreferrer"
               >

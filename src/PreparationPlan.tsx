@@ -1,3 +1,4 @@
+import { saveProgress, useProgressReload } from "./progress-events";
 import { useEffect, useState } from "react";
 import {
   ArrowRight,
@@ -70,6 +71,7 @@ export function PreparationPlan({
   });
   const [saved, setSaved] = useState(initial.data),
     [error, setError] = useState(initial.error);
+  useProgressReload(planStorageKey, loadPlan, setSaved);
   const [expanded, setExpanded] = useState(
     () =>
       new Set([
@@ -110,7 +112,7 @@ export function PreparationPlan({
     };
     setSaved(updated);
     try {
-      localStorage.setItem(planStorageKey, JSON.stringify(updated));
+      saveProgress(planStorageKey, updated, saved);
       setError("");
     } catch {
       setError(
