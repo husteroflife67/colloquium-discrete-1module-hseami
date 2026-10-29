@@ -1,3 +1,4 @@
+import { LearningArt } from "./platform/LearningArt";
 import React, { useState, useEffect } from "react";
 
 import {
@@ -543,21 +544,9 @@ export default function DiscreteApp() {
                         Собрать пробный билет <ArrowUpRight size={18} />
                       </button>
                     </div>
-                    <div className="math-art" aria-hidden="true">
-                      <span className="art-label">
-                        НЕМНОГО МАТЕМАТИЧЕСКОЙ МАГИИ
-                      </span>
-                      <div className="venn">
-                        <i />
-                        <i />
-                        <i />
-                        <span>A</span>
-                        <b>B</b>
-                      </div>
-                      <span className="art-formula">
-                        |A ∪ B| = |A| + |B| − |A ∩ B|
-                      </span>
-                      <span className="art-spark">✳</span>
+                    <div className="math-art course-illustration" aria-hidden="true">
+                      <LearningArt variant="discrete" />
+                      <span className="art-formula">|A ∪ B| = |A| + |B| − |A ∩ B|</span>
                     </div>
                   </section>
                   <section className="stats-row">

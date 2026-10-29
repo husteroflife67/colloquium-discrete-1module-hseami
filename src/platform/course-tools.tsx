@@ -1,5 +1,6 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { courses, materialKey, type CourseId, type Material } from "./catalog";
+import { Bookmark as BookmarkIcon, NotebookPen, GraduationCap } from "lucide-react";
 export const platformKey = "colloquium-platform-v1";
 export type PlatformSaved = { version: 1; bookmarks: string[] };
 export function readPlatform(): PlatformSaved {
@@ -30,7 +31,7 @@ export function useCoursePage<T extends string>(course: CourseId, initial: T, al
 }
 export function CourseTools({ course }: { course?: CourseId }) {
   return <header className="platform-bar" aria-label="Выбор курса">
-    <a className="platform-home" href="#/home">Коллоквиум<span> · два курса</span></a>
+    <a className="platform-home" href="#/home"><span className="platform-brand-mark" aria-hidden="true">к<span>↗</span></span><span className="platform-brand-name">Коллоквиум<span className="platform-brand-dot">.</span><small>УЧИТЬСЯ ПОНИМАТЬ</small></span></a>
     <label>Курс <select aria-label="Выбрать курс" value={course ?? ""} onChange={e => {
       const id = e.target.value as CourseId;
       location.hash = `#/${id}/${courses[id].start}`;
@@ -38,7 +39,7 @@ export function CourseTools({ course }: { course?: CourseId }) {
       {!course && <option value="" disabled>Выберите курс</option>}
       {Object.entries(courses).map(([id, c]) => <option key={id} value={id}>{c.title}</option>)}
     </select></label>
-    <a href="#/bookmarks">Закладки</a><a href="#/mistakes">Журнал</a>
+    <div className="platform-header-links"><a href="#/bookmarks"><BookmarkIcon size={17} />Закладки</a><a href="#/mistakes"><NotebookPen size={17} />Журнал</a></div><span className="platform-profile-symbol" aria-hidden="true"><GraduationCap size={22} /></span>
   </header>;
 }
 export function Bookmark(material: Material) {

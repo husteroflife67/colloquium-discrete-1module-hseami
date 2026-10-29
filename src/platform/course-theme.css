@@ -1,0 +1,138 @@
+/* A shared visual language over the two preserved course interfaces. */
+.platform-course {
+  --bg: #f8f7f3; --panel: #fff; --text: #302b3d; --muted: #746b80;
+  --line: #e8e2ed; --border: #e8e2ed; --accent: #7755aa; --green: #7755aa;
+  --tint: #f1eaf8; --sidebar: #fffdf9;
+  font-family: var(--platform-font); background: var(--bg); color: var(--text);
+}
+.platform-course .sidebar {
+  background: var(--sidebar); color: #6c6376; border-right: 1px solid var(--line);
+  padding-top: 28px;
+}
+.platform-course .brand { color: #4e405f; font-weight: 650; }
+.platform-course .brand-icon, .platform-course .brand-dot { color: #a283bf; }
+.platform-course .brand-symbol { background: #8d6bb5; border-radius: 13px; }
+.platform-course .brand-sub { color: #a293ad; }
+.platform-course .workspace-label { color: #b09fba; margin-top: 32px; }
+.platform-course .sidebar nav { gap: 5px; }
+.platform-course .sidebar nav button {
+  color: #796584; font-size: 12px; border-radius: 10px; padding: 12px;
+  transition: color .2s, background .2s, transform .2s;
+}
+.platform-course .sidebar nav button svg { stroke-width: 1.6; color: #a792bb; }
+.platform-course .sidebar nav button:hover { color: #745390; background: #f5eff9; transform: translateX(2px); }
+.platform-course .sidebar nav button.active { color: #77549a; background: #eee5f7; font-weight: 600; }
+.platform-course .sidebar nav button.active svg { color: #8e69b6; }
+.platform-course .sidebar-course { border-color: #ece4f0; margin-top: 28px; }
+.platform-course .sidebar-course strong, .platform-course .course b { color: #72607e; }
+.platform-course .sidebar-course small, .platform-course .sidebar-course > span:not(.eyebrow), .platform-course .sidebar-bottom small { color: #a392af; }
+.platform-course .sidebar-course .eyebrow, .platform-course .course > span:last-child, .platform-course .sidebar-bottom p { color: #a898b2; }
+.platform-course .sidebar-progress, .platform-course .track { background: #ece4f2; border-radius: 8px; }
+.platform-course .sidebar-progress i, .platform-course .track i { background: #ab8bc9; }
+.platform-course .course-icon { color: #b39ac7; }
+.platform-course .sidebar-bottom { border-color: var(--line); }
+.platform-course .sidebar-bottom strong { color: #816b91; }
+.platform-course .avatar { color: #9676ad; background: #eee6f5; border-color: #e6dbef; }
+.platform-course .theme-toggle { color: #a089b1; }
+.platform-course .topbar { background: #fffdf9; color: #82708e; border-bottom-color: var(--line); }
+.platform-course .topbar b { color: #897595; }
+.platform-course .topbar > div span { color: #d3c7db; }
+.platform-course .mobile-toggle { background: #8260a6; border-radius: 10px; }
+.platform-course .page-kicker, .platform-course .eyebrow { color: #8b6b9e; }
+.platform-course h1 { font-family: var(--platform-font); font-weight: 650; letter-spacing: -1.2px; color: var(--text); }
+.platform-course h2, .platform-course h3 { color: var(--text); }
+.platform-course .subtitle, .platform-course .page-heading p { color: var(--muted); }
+.platform-course .hero { background: #eee7f6; border: 1px solid #e6dcef; border-radius: 21px; }
+.platform-course .hero h2 { color: #655075; font-family: var(--platform-font); font-weight: 550; }
+.platform-course .hero h2 em { color: #a17bbd; }
+.platform-course .hero p, .platform-course .hero-note { color: #7e638e; }
+.platform-course .hero .eyebrow, .platform-course .hero-label { color: #8d6da0; }
+.platform-course .hero-label > span { background: #b48dcb; }
+.platform-course .hero button, .platform-course .primary { color: #fff; background: #8360ad; border-radius: 10px; border-color: #8360ad; font-family: var(--platform-font); transition: background .2s, transform .2s, box-shadow .2s; }
+.platform-course .hero button:hover, .platform-course .primary:hover:not(:disabled) { background: #6f4c98; box-shadow: 0 5px 14px #63438324; transform: translateY(-1px); }
+.platform-course .hero-art { color: #b198c4; }
+.platform-course .art-equation { background: #eee7f6; }
+.platform-course .math-art { background-image: radial-gradient(#d5c5e3 .8px, transparent .8px); }
+.platform-course .art-label, .platform-course .art-formula, .platform-course .art-spark { color: #b59dc7; }
+.platform-course .venn i { border-color: #b69acb; background: #d2b9e422; }
+.platform-course .venn i:nth-child(2) { border-color: #c9add5; background: #f1c4aa44; }
+.platform-course .venn span, .platform-course .venn b { color: #a685ba; }
+.platform-course .panel, .platform-course .library-card, .platform-course .topic-card,
+.platform-course .detail-card, .platform-course .question-list, .platform-course .topic-list,
+.platform-course .stat, .platform-course .stats-row, .platform-course .progress-overview {
+  border-color: var(--line); border-radius: 16px; background: var(--panel); box-shadow: 0 4px 15px #30204003;
+}
+.platform-course .topic-card, .platform-course .library-card, .platform-course .question-row {
+  transition: transform .25s, box-shadow .25s, border-color .25s, background .25s;
+}
+.platform-course .topic-card:hover, .platform-course .library-card:hover {
+  transform: translateY(-3px); border-color: #cdb8dd; box-shadow: 0 9px 22px #6843810b; background: var(--panel);
+}
+.platform-course .topic-card.selected { border-color: #ac8fc7; background: #f7f2fb; }
+.platform-course .topic-card.selected::after { background: #ac8fc7; }
+.platform-course .question-row:hover { background: #faf7fc; }
+.platform-course .question-number { color: #b095c4; background: #f3edf8; }
+.platform-course .question-link:hover > span, .platform-course .text-button, .platform-course .source-link,
+.platform-course .topic-links button, .platform-course .reading-toc a { color: #86619f; }
+.platform-course .topic-number { color: #b39bc5; }
+.platform-course .stat > svg { color: #baa3ca; }
+.platform-course .stat strong { color: #79618d; }
+.platform-course .secondary, .platform-course .secondary-button, .platform-course .platform-bookmark button {
+  border-radius: 9px; border-color: #ded2e7; color: #9777ac; background: #faf7fd;
+}
+.platform-course input, .platform-course select, .platform-course textarea { border-radius: 9px; border-color: #e5dbea; accent-color: #a07dbd; }
+.platform-course input:focus, .platform-course select:focus, .platform-course textarea:focus { outline-color: #c1a6d7; }
+.platform-course .reading > h2 { font-family: var(--platform-font); font-weight: 600; }
+.platform-course .statement { background: #f3edf8; border-color: #e6d8ef; border-radius: 12px; color: #82678f; }
+.platform-course .reading h3 { color: #796485; }
+.platform-course .hint, .platform-course .idea, .platform-course .answer, .platform-course .official-prompt { border-radius: 11px; }
+.platform-course .content, .platform-course .main-shell > main { animation: platform-enter .4s backwards; }
+.platform-course footer { border-color: var(--line); color: #b29fbc; }
+.platform-course footer a { color: #a385b4; }
+.platform-course-calculus .hero { background: #f8e9df; border-color: #efded2; }
+.platform-course-calculus .hero h2 { color: #8b6a59; }
+.platform-course-calculus .hero p, .platform-course-calculus .hero .eyebrow, .platform-course-calculus .hero-note { color: #8f6d5a; }
+.platform-course-calculus .hero-art { color: #c7ad96; }
+.platform-course-calculus .art-equation { background: #f8e9df; }
+/* Preserve the existing calculus theme preference and keep the new colours legible. */
+[data-theme="dark"] .platform-course {
+  --bg: #211e29; --panel: #2b2635; --text: #e9e1f0; --muted: #aa9ab9;
+  --line: #403548; --border: #403548; --accent: #baa0da; --tint: #392e47; --sidebar: #282231;
+}
+[data-theme="dark"] .platform-course .sidebar { color: #bcabc8; }
+[data-theme="dark"] .platform-course .brand, [data-theme="dark"] .platform-course .sidebar-course strong { color: #decee8; }
+[data-theme="dark"] .platform-course .topbar { background: #282231; }
+[data-theme="dark"] .platform-course .sidebar nav button.active { background: #423150; color: #e0c5f2; }
+[data-theme="dark"] .platform-course .sidebar nav button:hover { background: #35293f; color: #e0c5f2; }
+[data-theme="dark"] .platform-course .hero { background: #393042; border-color: #51405c; }
+[data-theme="dark"] .platform-course .hero h2 { color: #dfc8ea; }
+[data-theme="dark"] .platform-course .hero p { color: #baa2c8; }
+[data-theme="dark"] .platform-course .art-equation { background: #393042; }
+[data-theme="dark"] .platform-course .statement { background: #392e47; color: #d4bce4; border-color: #53405f; }
+[data-theme="dark"] .platform-course .reading h3 { color: #c4a9d6; }
+[data-theme="dark"] .platform-course .secondary, [data-theme="dark"] .platform-course .platform-bookmark button { background: #352a41; color: #c8a8df; border-color: #5b456c; }
+@media (max-width: 740px) {
+  .platform-course .hero { border-radius: 16px; }
+  .platform-course .panel, .platform-course .reading { border-radius: 13px; }
+}
+
+[data-theme="dark"] .platform-bar { background: #282231f5; color: #e8ddef; border-color: #47364f; }
+[data-theme="dark"] .platform-header-links a { color: #c5afd4; }
+[data-theme="dark"] .platform-bar select { background: #352a41; color: #ddc7eb; border-color: #574365; }
+[data-theme="dark"] .platform-brand-mark { background: #ba9cd3; color: #2b1f37; }
+[data-theme="dark"] .platform-brand-mark > span { color: #6c4988; }
+[data-theme="dark"] .platform-profile-symbol { background: #42304f; color: #cdb0e1; }
+
+.platform-course .course-illustration { transform: none; background-image: none; }
+.platform-course .course-illustration .learning-art { height: auto; max-width: 440px; }
+.platform-course .math-art.course-illustration { width: 38%; right: 12px; }
+.platform-course .math-art.course-illustration .learning-art { width: 125%; max-width: none; }
+.platform-course .course-illustration .art-formula { font-size: 12px; color: #9776aa; margin: 4px 0 0; }
+.platform-course .course-illustration .art-caption { color: #a07d69; }
+[data-theme="dark"] .platform-course .sidebar nav button { color: #c3afcf; }
+[data-theme="dark"] .platform-course .course b, [data-theme="dark"] .platform-course .sidebar-bottom strong { color: #d4bee3; }
+[data-theme="dark"] .platform-course .stat strong { color: #d8bce9; }
+[data-theme="dark"] .platform-course .hero .eyebrow, [data-theme="dark"] .platform-course .hero-note { color: #c6a9d4; }
+[data-theme="dark"] .platform-course .course-illustration .art-caption { color: #b79bc6; }
+[data-theme="dark"] .platform-course .track { background: #493951; }
+[data-theme="dark"] .platform-course .track i { background: #b08bcc; }

@@ -1,3 +1,4 @@
+import { LearningArt } from "../platform/LearningArt";
 import React, { useState, useEffect, useRef } from "react";
 
 import { MathText } from "./MathText";
@@ -372,67 +373,9 @@ export default function CalculusApp() {
                     Без расписания. В своём темпе.
                   </span>
                 </div>
-                <div className="hero-art" aria-hidden="true">
-                  <span className="art-top">ДВИЖЕНИЕ К ЯСНОСТИ</span>
-                  <svg viewBox="0 0 360 220">
-                    <defs>
-                      <pattern
-                        id="grid"
-                        width="30"
-                        height="30"
-                        patternUnits="userSpaceOnUse"
-                      >
-                        <path
-                          d="M 30 0 L 0 0 0 30"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth=".45"
-                        />
-                      </pattern>
-                    </defs>
-                    <rect
-                      width="360"
-                      height="220"
-                      fill="url(#grid)"
-                      opacity=".35"
-                    />
-                    <path
-                      d="M20 180 H340 M50 205 V20"
-                      stroke="currentColor"
-                      opacity=".4"
-                    />
-                    <path
-                      d="M50 178 C105 175 103 89 165 72 S270 57 335 56"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                    />
-                    <path
-                      d="M50 56 H335"
-                      stroke="currentColor"
-                      strokeDasharray="5 6"
-                      opacity=".5"
-                    />
-                    {[80, 110, 145, 185, 230, 280, 326].map((x, i) => (
-                      <circle
-                        key={x}
-                        cx={x}
-                        cy={[161, 113, 79, 66, 60, 57, 56][i]}
-                        r="4"
-                        fill="currentColor"
-                      />
-                    ))}
-                    <text x="320" y="44" fill="currentColor" fontStyle="italic">
-                      a
-                    </text>
-                    <text x="325" y="201" fill="currentColor">
-                      n
-                    </text>
-                  </svg>
-                  <span className="art-equation">lim aₙ = a</span>
-                  <span className="art-caption">
-                    Маленькие шаги. Определённый предел.
-                  </span>
+                <div className="hero-art course-illustration" aria-hidden="true">
+                  <LearningArt variant="calculus" />
+                  <span className="art-caption">Маленькие шаги. Определённый предел.</span>
                 </div>
               </section>
               <div className="stats">
