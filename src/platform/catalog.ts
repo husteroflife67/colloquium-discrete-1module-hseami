@@ -1,4 +1,4 @@
-import course from "../data/course.json";
+import course from "../data/course.json" with { type: "json" };
 import { practice } from "../practice-model";
 import { items } from "../calculus/content";
 

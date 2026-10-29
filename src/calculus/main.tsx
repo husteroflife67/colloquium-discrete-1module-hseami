@@ -1,3 +1,5 @@
+import { MaterialActions } from "../platform/MaterialActions";
+import { oralTargets } from "../platform/study-content";
 import { LearningArt } from "../platform/LearningArt";
 import React, { useState, useEffect, useRef } from "react";
 
@@ -186,8 +188,12 @@ export default function CalculusApp() {
     setFlash(false);
   };
   useEffect(() => {
-    const target = new URLSearchParams(location.hash.split("?")[1] ?? "").get("item");
-    if (target && byId(target)) { setSelected(target); setFlash(false); }
+    const openTarget = () => {
+      const target = new URLSearchParams(location.hash.split("?")[1] ?? "").get("item");
+      if (target && byId(target)) { setSelected(target); setFlash(false); }
+    };
+    openTarget(); window.addEventListener("hashchange", openTarget);
+    return () => window.removeEventListener("hashchange", openTarget);
   }, [page]);
   const visible = items
     .filter(
@@ -1463,12 +1469,20 @@ function Question({
   separate?: boolean;
 }) {
   const [show, setShow] = useState(0);
+  const target = oralTargets.get(q.id);
+  useEffect(() => {
+    if (new URLSearchParams(location.hash.split("?")[1] ?? "").get("question") === q.id) {
+      const element = document.getElementById(`oral-question-${q.id}`);
+      element?.focus({ preventScroll: true }); element?.scrollIntoView({ block: "start" });
+    }
+  }, [q.id]);
   return (
-    <section className="question panel">
+    <section className="question panel" tabIndex={-1} aria-labelledby={`oral-title-${q.id}`} id={`oral-question-${q.id}`} data-linked={new URLSearchParams(location.hash.split("?")[1] ?? "").get("question") === q.id || undefined}>
+      {target && <MaterialActions material={target.material} questionId={q.id} />}
       <div className="eyebrow">
         {q.difficulty} {label && "· " + label}
       </div>
-      <h3>
+      <h3 id={`oral-title-${q.id}`}>
         <MathText text={q.prompt} />
       </h3>
       <div className="question-actions">

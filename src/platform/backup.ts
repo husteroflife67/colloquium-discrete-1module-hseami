@@ -3,8 +3,7 @@ import { validateBackup, type ProgressBackup } from "../progress-backup";
 import { emptyData, validateImport } from "../calculus/engine";
 import { items } from "../calculus/content";
 import { validateQuestions } from "../calculus/sync-model";
-import { platformKey, type PlatformSaved } from "./course-tools";
-import { materialKey, materials } from "./catalog";
+import { platformKey, validatePlatform } from "./platform-state";
 import { progressWritten, announceProgress } from "../progress-events";
 
 export const backupKeys = [...Object.values(localKeys), "predel-v1", "predel-v1-questions", platformKey];
@@ -33,10 +32,7 @@ export function parseBackup(raw: unknown): Record<string, unknown> {
     if (key === "predel-v1") result[key] = validateImport(value, ids, items);
     else if (key === "predel-v1-questions") result[key] = validateQuestions(value);
     else if (key === platformKey) {
-      const p = value as PlatformSaved;
-      const valid = new Set(materials.map(materialKey));
-      if (p?.version !== 1 || !Array.isArray(p.bookmarks) || p.bookmarks.some(k => !valid.has(k))) throw Error("Некорректные закладки");
-      result[key] = { version: 1, bookmarks: [...new Set(p.bookmarks)] };
+      result[key] = validatePlatform(value);
     } else {
       const name = Object.entries(localKeys).find(([, k]) => k === key)![0];
       validateBackup({ format: "discrete-progress-backup", version: 1, data: { [name]: value } });
@@ -62,7 +58,11 @@ export function prepareImport(incoming: Record<string, unknown>, choice: "local"
     const local = raw ? JSON.parse(raw) : null;
     const next = value as any;
     let merged: unknown;
-    if (key === platformKey) merged = { version: 1, bookmarks: [...new Set([...(local?.bookmarks ?? []), ...next.bookmarks])] };
+    if (key === platformKey) {
+      if (local) validatePlatform(local);
+      const sessions = mergeRecord(Object.fromEntries((local?.sessions ?? []).map((s: any) => [s.id, s])), Object.fromEntries((next.sessions ?? []).map((s: any) => [s.id, s])));
+      merged = { version: 1, bookmarks: [...new Set([...(local?.bookmarks ?? []), ...next.bookmarks])], ...(Object.keys(sessions).length ? { sessions: Object.values(sessions).sort((a, b) => Date.parse(b.started) - Date.parse(a.started)) } : {}) };
+    }
     else if (key === "predel-v1-questions") {
       if (local) validateQuestions(local);
       merged = mergeRecord(local ?? {}, next);

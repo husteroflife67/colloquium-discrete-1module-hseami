@@ -1,15 +1,11 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { courses, materialKey, type CourseId, type Material } from "./catalog";
-import { Bookmark as BookmarkIcon, NotebookPen, GraduationCap } from "lucide-react";
-export const platformKey = "colloquium-platform-v1";
-export type PlatformSaved = { version: 1; bookmarks: string[] };
-export function readPlatform(): PlatformSaved {
-  const raw = localStorage.getItem(platformKey);
-  if (!raw) return { version: 1, bookmarks: [] };
-  const data = JSON.parse(raw);
-  if (data?.version !== 1 || !Array.isArray(data.bookmarks) || !data.bookmarks.every((v: unknown) => typeof v === "string")) throw Error("Некорректные закладки платформы");
-  return data;
-}
+import { Bookmark as BookmarkIcon, NotebookPen, Search } from "lucide-react";
+import { platformKey, readPlatform } from "./platform-state";
+export { platformKey, readPlatform } from "./platform-state";
+export type { PlatformSaved } from "./platform-state";
+import { MaterialActions } from "./MaterialActions";
+import { findMaterial } from "./catalog";
 export function useCoursePage<T extends string>(course: CourseId, initial: T, allowed: readonly string[]): [T, Dispatch<SetStateAction<T>>] {
   const get = () => {
     const parts = location.hash.slice(2).split("?")[0].split("/");
@@ -39,7 +35,7 @@ export function CourseTools({ course }: { course?: CourseId }) {
       {!course && <option value="" disabled>Выберите курс</option>}
       {Object.entries(courses).map(([id, c]) => <option key={id} value={id}>{c.title}</option>)}
     </select></label>
-    <div className="platform-header-links"><a href="#/bookmarks"><BookmarkIcon size={17} />Закладки</a><a href="#/mistakes"><NotebookPen size={17} />Журнал</a></div><span className="platform-profile-symbol" aria-hidden="true"><GraduationCap size={22} /></span>
+    <div className="platform-header-links"><a className="study-header-search" href="#/search" aria-label="Поиск по двум курсам"><Search size={17} /><span>Поиск</span><kbd aria-hidden="true">Ctrl K</kbd></a><a href="#/bookmarks"><BookmarkIcon size={17} />Закладки</a><a href="#/mistakes"><NotebookPen size={17} />Журнал</a></div>
   </header>;
 }
 export function Bookmark(material: Material) {
@@ -47,7 +43,7 @@ export function Bookmark(material: Material) {
   const [active, setActive] = useState(false);
   const [error, setError] = useState("");
   useEffect(() => { try { setActive(readPlatform().bookmarks.includes(key)); } catch { setError("Не удалось прочитать закладки. Сохраните резервную копию."); } }, [key]);
-  return <div className="platform-bookmark"><button type="button" aria-pressed={active} onClick={() => {
+  return <div className="platform-bookmark"><div className="study-card-tools"><button type="button" aria-pressed={active} onClick={() => {
     try {
       const data = readPlatform();
       const next = !data.bookmarks.includes(key);
@@ -56,5 +52,5 @@ export function Bookmark(material: Material) {
       setActive(next); setError("");
       window.dispatchEvent(new Event("platform-bookmarks-changed"));
     } catch { setError("Не удалось сохранить закладку. Хранилище недоступно или заполнено."); }
-  }}>{active ? "★ Убрать из закладок" : "☆ В закладки"}</button>{error && <p role="alert">{error}</p>}</div>;
+  }}>{active ? "★ Убрать из закладок" : "☆ В закладки"}</button><MaterialActions key={key} material={findMaterial(material.course, material.kind, material.id) ?? material} /></div>{error && <p role="alert">{error}</p>}</div>;
 }

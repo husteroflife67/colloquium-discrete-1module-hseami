@@ -1,3 +1,4 @@
+import { buildJournal, recoveryQueue, latestRecovery } from "./journal";
 import { useEffect, useState } from "react";
 import { courses, materials, materialKey, materialLink, type CourseId, type Material } from "./catalog";
 import { readPlatform, CourseTools, Bookmark } from "./course-tools";
@@ -13,7 +14,7 @@ import { emptyData, validateImport } from "../calculus/engine";
 import { readSaved } from "../model";
 import { loadPractice } from "../practice-model";
 import { loadPlan, planProgress } from "../plan-model";
-import { ArrowUpRight, ArrowRight, Bookmark as BookmarkIcon, BookOpen, Layers3, Route, NotebookPen, ShieldCheck, Download, Upload, Sparkles } from "lucide-react";
+import { ArrowUpRight, ArrowRight, Bookmark as BookmarkIcon, BookOpen, Layers3, Route, NotebookPen, ShieldCheck, Download, Upload, Sparkles, Search, Target, CheckCircle2 } from "lucide-react";
 import { LearningArt } from "./LearningArt";
 
 function ProgressMeter({ value, total, label }: { value: number; total: number; label: string }) {
@@ -47,20 +48,8 @@ export default function Home({ view }: { view: string }) {
   const [filter, setFilter] = useState<"all" | CourseId>("all");
   const preview = incoming ? prepareImport(incoming, choice) : null;
   const bookmarks = materials.filter(m => snapshot.platform.bookmarks.includes(materialKey(m)));
-  const journal: { material: Material; date: string; label: string; ticketId: string }[] = [];
-  for (const h of snapshot.discrete.results) for (const id of h.questionIds) if (h.ratings[id] !== "known") {
-    const material = materials.find(m => m.course === "discrete" && m.kind === "theory" && m.id === id);
-    if (material) journal.push({ material, date: h.date, label: h.ratings[id] === "repeat" ? "Нужно повторить" : "Не помню", ticketId: h.id });
-  }
-  for (const h of snapshot.practice.results) for (const id of h.itemIds) if (h.ratings[id] !== "independent") {
-    const material = materials.find(m => m.course === "discrete" && m.kind === "practice" && m.id === id);
-    if (material) journal.push({ material, date: h.date, label: "Пока не доказано самостоятельно", ticketId: h.id });
-  }
-  for (const h of snapshot.calculus.history) for (const id of h.weak) {
-    const material = materials.find(m => m.course === "calculus" && m.id === id);
-    if (material) journal.push({ material, date: h.date, label: "Самооценка ниже максимума", ticketId: h.id });
-  }
-  journal.sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
+  const journal = buildJournal(snapshot.discrete, snapshot.practice, snapshot.calculus);
+  const pending = recoveryQueue(journal, snapshot.platform);
   const list = view === "bookmarks" ? bookmarks : [];
   const discreteKnown = courseData.questions.filter(q => snapshot.discrete.progress[q.id]?.status === "known").length;
   const practiceKnown = practiceCatalog.items.filter(q => snapshot.practice.progress[q.id] === "independent").length;
@@ -75,6 +64,7 @@ export default function Home({ view }: { view: string }) {
           <div className="platform-kicker"><span /><span>{view === "home" ? "МЕСТО, ГДЕ СТАНОВИТСЯ ПОНЯТНО" : "ТВОЁ УЧЕБНОЕ ПРОСТРАНСТВО"}</span></div>
           <h1>{view === "bookmarks" ? "Закладки" : view === "mistakes" ? "Журнал ошибок" : <>Продолжить <span>подготовку</span></>}</h1>
           <p className="platform-lead">{view === "home" ? "От первого «что это?» до уверенного ответа у доски. Два курса, понятный маршрут и твой собственный темп." : view === "bookmarks" ? "Всё, к чему хочется вернуться. Важные определения, непростые доказательства и хорошие идеи." : "Затруднение — тоже точка роста. Вернись к сложному и попробуй ещё раз."}</p>
+          {view === "home" && <a href="#/search" className="study-home-search"><Search size={19} /><span>Найти определение, доказательство или задачу</span><kbd>Ctrl K</kbd></a>}
           {view === "home" && <div className="platform-hero-tags"><span><BookOpen size={15} /> 2 курса</span><span><Layers3 size={15} /> {materials.length} материалов</span><span><Sparkles size={15} /> Учиться понимать</span></div>}
         </div>
         {view === "home" ? <div className="platform-intro-art"><LearningArt /><span className="platform-art-note">Из маленьких шагов<br /><b>складывается понимание.</b></span></div> : <div className="platform-view-symbol" aria-hidden="true">{view === "bookmarks" ? <BookmarkIcon /> : <NotebookPen />}</div>}
@@ -97,8 +87,9 @@ export default function Home({ view }: { view: string }) {
             </div>
           </section>
         </div>
+        <a className="study-home-recovery" href="#/recovery"><span className="study-home-recovery-icon"><Target /></span><span><b>Разобрать сложное</b><small>{pending.length ? `${pending.length} материалов из журнала ждут повторного ответа` : "Тренировка по затруднениям из завершённых билетов"}</small></span><ArrowUpRight size={23} /></a>
         <div className="platform-next-steps"><div><span className="platform-overline">ХОРОШАЯ ПРИВЫЧКА</span><h2>Немного практики.<br /> Больше уверенности.</h2><p>Начни с понятного шага — остальное сложится.</p></div><a href="#/discrete/plan"><span className="platform-shortcut-icon"><Route /></span><span><b>Пройти по маршруту</b><small>План дискретной математики</small></span><ArrowUpRight /></a><a href="#/calculus/oral"><span className="platform-shortcut-icon"><BookOpen /></span><span><b>Ответить у доски</b><small>Устный экзаменатор матанализа</small></span><ArrowUpRight /></a></div>
-        <section className="platform-section platform-backup-section"><div className="platform-backup-heading"><span className="platform-backup-icon"><ShieldCheck size={26} /></span><div><span className="platform-overline">ПРОГРЕСС С ТОБОЙ</span><h2>Резервная копия обоих курсов</h2></div></div><p>Сохрани оценки, билеты, черновики и закладки одним файлом. Можно загрузить и прежние копии обоих приложений.</p>
+        <section className="platform-section platform-backup-section"><div className="platform-backup-heading"><span className="platform-backup-icon"><ShieldCheck size={26} /></span><div><span className="platform-overline">ПРОГРЕСС С ТОБОЙ</span><h2>Резервная копия обоих курсов</h2></div></div><p>Сохрани оценки, билеты, тренировки, черновики и закладки одним файлом. Можно загрузить и прежние копии обоих приложений.</p>
           <div className="platform-backup"><button onClick={() => {
             try {
               const blob = new Blob([JSON.stringify(exportBackup(), null, 2)], { type: "application/json" });
@@ -121,7 +112,7 @@ export default function Home({ view }: { view: string }) {
         <div className="platform-sync-note"><ShieldCheck size={16} /><PlatformSyncSummary /></div>
       </>}
       {view !== "home" && <><label>Курс <select aria-label="Фильтр курса" value={filter} onChange={e => setFilter(e.target.value as typeof filter)}><option value="all">Оба курса</option><option value="discrete">Дискретная математика</option><option value="calculus">Матанализ</option></select></label>
-        {view === "bookmarks" ? <><p>Закладка сохраняется отдельно от самооценки и не меняет прогресс.</p><ul className="platform-list">{list.filter(m => filter === "all" || m.course === filter).map(m => <li key={materialKey(m)}>{entry(m)}<Bookmark {...m} /></li>)}</ul>{!list.length && <p>Закладок пока нет. Добавьте материал кнопкой «В закладки» в его карточке.</p>}</> : <><p>Здесь собраны низкие самооценки из завершённых билетов. Это история затруднений, а не автоматическая проверка. Новая оценка материала не изменяет прошлый результат.</p><ul className="platform-list">{journal.filter(j => filter === "all" || j.material.course === filter).map((j, n) => <li key={`${j.material.course}-${j.ticketId}-${n}`}>{entry(j.material)}<small>{new Date(j.date).toLocaleString("ru-RU")} · {j.label}</small></li>)}</ul>{!journal.length && <p>Пока нет завершённых билетов с низкими самооценками.</p>}</>}
+        {view === "bookmarks" ? <><p>Закладка сохраняется отдельно от самооценки и не меняет прогресс.</p><ul className="platform-list">{list.filter(m => filter === "all" || m.course === filter).map(m => <li key={materialKey(m)}>{entry(m)}<Bookmark {...m} /></li>)}</ul>{!list.length && <p>Закладок пока нет. Добавьте материал кнопкой «В закладки» в его карточке.</p>}</> : <><div className="study-journal-cta"><div><Target size={25} /><span><b>{pending.filter(j => filter === "all" || j.material.course === filter).length} материалов для тренировки</b><small>Вспомни, сверься с разбором и сохрани новую самооценку.</small></span></div><a className="study-solid-button" href={filter === "all" ? "#/recovery" : `#/recovery?course=${filter}`}>Разобрать сложное <ArrowRight size={17} /></a></div><p>Здесь собраны низкие самооценки из завершённых билетов. Это история затруднений, а не автоматическая проверка. Новая оценка материала не изменяет прошлый результат.</p><ul className="platform-list">{journal.filter(j => filter === "all" || j.material.course === filter).map((j, n) => <li key={`${j.material.course}-${j.ticketId}-${n}`}>{entry(j.material)}{latestRecovery(snapshot.platform, materialKey(j.material))?.rating === "understood" && latestRecovery(snapshot.platform, materialKey(j.material))?.sourceTicketId === j.ticketId && <span className="study-resolved"><CheckCircle2 size={13} />Разобрано в тренировке</span>}<small>{new Date(j.date).toLocaleString("ru-RU")} · {j.label}</small></li>)}</ul>{!journal.length && <p>Пока нет завершённых билетов с низкими самооценками.</p>}</>}
       </>}
       <footer className="platform-footer"><a href="#/home">Коллоквиум<span>↗</span></a><span>Понимать. Доказывать. Получать удовольствие.</span><span>Дискретная математика + матанализ</span></footer>
     </main>
