@@ -1,3 +1,4 @@
+import { Bookmark } from "./platform/course-tools";
 import { assetUrl } from "./asset-url";
 import { saveProgress, useProgressReload } from "./progress-events";
 import { useState } from "react";
@@ -304,6 +305,7 @@ function StudyCard({
         </h1>
         <StudyStatusPicker value={value} onChange={onMark} />
       </div>
+      <Bookmark course="discrete" kind="practice" id={q.id} title={q.number} />
       <Badges q={q} />
       <article className="detail-card practice-detail">
         <Condition q={q} />

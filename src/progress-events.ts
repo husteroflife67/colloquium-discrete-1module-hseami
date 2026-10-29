@@ -1,3 +1,4 @@
+import { calculusRebase } from "./calculus/sync-model";
 import { rebaseLocalWrite } from "./sync-model";
 import { useEffect } from "react";
 export const progressChanged = "discrete-progress-changed";
@@ -12,7 +13,7 @@ export function saveProgress(key: string, value: unknown, previous?: unknown) {
   const after = JSON.stringify(
     previous === undefined
       ? value
-      : rebaseLocalWrite(key, previous, value, before),
+      : (key.startsWith("predel-v1") ? calculusRebase : rebaseLocalWrite)(key, previous, value, before),
   );
   localStorage.setItem(key, after);
   window.dispatchEvent(

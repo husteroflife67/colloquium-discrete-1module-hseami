@@ -18,6 +18,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { supabase, syncConfigured, configurationError } from "./supabase";
+import { items as calculusItems } from "./calculus/content";
+import { calculusCodec } from "./calculus/sync-model";
 import { SyncEngine } from "./sync-engine";
 import {
   validateBackup,
@@ -31,23 +33,27 @@ import { practice, statusLabels } from "./practice-model";
 import { preparationPlan } from "./plan-model";
 const Context = createContext<{
   engine: SyncEngine;
+  calculusEngine: SyncEngine;
   session: Session | null;
   authError: string;
 } | null>(null);
 export function SyncProvider({ children }: { children: ReactNode }) {
   const [engine] = useState(() => new SyncEngine(supabase));
+  const [calculusEngine] = useState(() => new SyncEngine(supabase, calculusCodec));
   const [session, setSession] = useState<Session | null>(null),
     [authError, setAuthError] = useState("");
   useEffect(() => {
     let active = true;
     engine.start();
-    if (!supabase) return () => engine.stop();
+    calculusEngine.start();
+    if (!supabase) return () => { engine.stop(); calculusEngine.stop(); };
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!active) return;
       setSession(session);
       engine.setUser(session?.user.id ?? null);
+      calculusEngine.setUser(session?.user.id ?? null);
     });
     supabase.auth.getSession().then(({ data, error }) => {
       if (!active) return;
@@ -55,15 +61,17 @@ export function SyncProvider({ children }: { children: ReactNode }) {
         setAuthError("Не удалось восстановить вход. Попробуйте войти снова.");
       setSession(data.session);
       engine.setUser(data.session?.user.id ?? null);
+      calculusEngine.setUser(data.session?.user.id ?? null);
     });
     return () => {
       active = false;
       subscription.unsubscribe();
       engine.stop();
+      calculusEngine.stop();
     };
-  }, [engine]);
+  }, [engine, calculusEngine]);
   return (
-    <Context.Provider value={{ engine, session, authError }}>
+    <Context.Provider value={{ engine, calculusEngine, session, authError }}>
       {children}
     </Context.Provider>
   );
@@ -76,6 +84,45 @@ function useSync() {
     value.engine.getSnapshot,
   );
   return { ...value, snapshot };
+}
+function calculusConflictLabel(key: string) {
+  const [kind, id] = key.split("/");
+  const title = calculusItems.find(i => i.id === id)?.title ?? calculusItems.flatMap(i => i.questions).find(q => q.id === id)?.prompt ?? (kind === "checklist" ? `Тема ${id}` : "Сохранённый результат");
+  const field = ({ rating: "Самооценка", question: "Ответ на уточнение", draft: "Черновик", schedule: "Повторение", history: "Билет", checklist: "Чек-лист", setting: "Оформление" } as Record<string, string>)[kind];
+  return `${field} · ${title}`;
+}
+function calculusValueLabel(value: CloudValue): string {
+  if (typeof value === "string") return ({ known: "Знаю", unknown: "Не знаю", partial: "Частично", repeat: "Повторить", light: "Светлая тема", dark: "Тёмная тема" } as Record<string, string>)[value] ?? value;
+  if (typeof value !== "object" || !value) return String(value);
+  if (value.deleted) return "Запись удалена";
+  if (typeof value.due === "number") return `Повторить ${new Date(value.due).toLocaleString("ru-RU")}; интервал ${value.intervalDays} суток`;
+  if (Array.isArray(value.values)) {
+    const labels = ["Определения", "Формулировки", "Доказательства", "Самостоятельное воспроизведение", "Уточнения", "Практика", "Повторение"];
+    return labels.filter((_, n) => value.values instanceof Array && value.values[n]).join(", ") || "Пункты не отмечены";
+  }
+  if (typeof value.base === "number") return `Билет от ${new Date(String(value.date)).toLocaleString("ru-RU")}; ${value.base} баллов + ${value.extra} дополнительных`;
+  return "Сохранённая запись";
+}
+export function PlatformSyncSummary() {
+  const value = useContext(Context)!;
+  const discrete = useSyncExternalStore(value.engine.subscribe, value.engine.getSnapshot);
+  const calculus = useSyncExternalStore(value.calculusEngine.subscribe, value.calculusEngine.getSnapshot);
+  if (!value.session) return <p>Прогресс сохраняется на этом устройстве. Для переноса используйте резервную копию или общий аккаунт.</p>;
+  return <div className="platform-status"><p><a href="#/discrete/sync">Дискретная математика</a>: {discrete.message}<br /><a href="#/calculus/sync">Матанализ</a>: {calculus.message}</p></div>;
+}
+export function CalculusSyncSettings() {
+  const value = useContext(Context)!;
+  const engine = value.calculusEngine;
+  const snapshot = useSyncExternalStore(engine.subscribe, engine.getSnapshot);
+  return <section className="panel">
+    <h2>Синхронизация матанализа</h2>
+    <p>Один аккаунт для обоих курсов. Оценки, черновики, чек-листы, расписания повторений, уточнения и завершённые билеты матанализа сохраняются отдельно от дискретной математики. Закладки пока хранятся на устройстве и входят в общую резервную копию.</p>
+    <p role="status">{snapshot.message}</p>
+    {!value.session && <p><a href="#/discrete/sync">Войти в общий аккаунт</a></p>}
+    {value.session && <button className="secondary" onClick={() => void engine.sync()}>Синхронизировать матанализ</button>}
+    <p><a href="#/home">Экспорт и импорт обоих курсов</a></p>
+    {snapshot.conflicts.map(c => <div className="hint" data-conflict={c.key} key={c.key}><h3>{calculusConflictLabel(c.key)}</h3><p>На устройстве: {calculusValueLabel(c.local)}</p><p>В аккаунте: {calculusValueLabel(c.remote)}</p><button className="secondary" onClick={() => engine.resolve(c.key, "local")}>Оставить на устройстве</button>{" "}<button className="secondary" onClick={() => engine.resolve(c.key, "cloud")}>Взять из аккаунта</button></div>)}
+  </section>;
 }
 export function SyncBadge({ onOpen }: { onOpen: () => void }) {
   const { session, snapshot } = useSync();
@@ -237,7 +284,7 @@ export function SyncSettings() {
       ) as Record<LocalKey, string | null>;
       const updates = mergeBackup(backup.backup, cache);
       for (const [key, raw] of Object.entries(updates))
-        saveProgress(key, JSON.parse(raw));
+        if (raw !== undefined) saveProgress(key, JSON.parse(raw));
       setBackup(null);
       setNotice(
         "Недостающие отметки и билеты добавлены. Существующие значения сохранены; при входе в аккаунт новые записи отправятся в облако.",

@@ -3,7 +3,7 @@ export const localKeys = {
   practice: "discrete-practice-v1",
   plan: "discrete-plan-v1",
 } as const;
-export type LocalKey = (typeof localKeys)[keyof typeof localKeys];
+export type LocalKey = string;
 export type CloudValue = boolean | string | Record<string, unknown>;
 export type CloudRow = {
   key: string;

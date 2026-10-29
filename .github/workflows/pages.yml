@@ -29,8 +29,11 @@ jobs:
           VITE_BASE_PATH: /
           VITE_SUPABASE_URL: ''
           VITE_SUPABASE_PUBLISHABLE_KEY: ''
+      - run: npm run test:unit
       - run: node scripts/verify-materials.mjs
+      - run: node scripts/verify-platform.mjs
       - run: npm run build
+      - run: npm run test:pages
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

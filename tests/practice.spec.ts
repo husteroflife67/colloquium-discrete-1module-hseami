@@ -17,14 +17,14 @@ const options = {
   onlyReady: true,
 };
 async function library(page: any) {
-  await page.goto("/");
+  await page.goto("/#/discrete/course");
   await page
     .locator("nav")
     .getByRole("button", { name: "Доказательства", exact: true })
     .click();
 }
 async function proofMode(page: any) {
-  await page.goto("/");
+  await page.goto("/#/discrete/course");
   await page
     .locator("nav")
     .getByRole("button", { name: "Пробный билет", exact: true })
@@ -164,7 +164,7 @@ test("все формулы новых материалов корректны �
 test("фильтры, исходное условие, подписи решений, отметки и сохранность старого прогресса", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/#/discrete/course");
   await page
     .getByLabel("Статус вопроса 1", { exact: true })
     .selectOption("known");
@@ -331,7 +331,7 @@ test("источники доступны, новый интерфейс на т
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
+  await page.goto("/#/discrete/course");
   await page.getByRole("button", { name: "Открыть меню" }).click();
   await page
     .locator("nav")

@@ -66,8 +66,8 @@ class Cloud {
           Buffer.from(token!.split(".")[1], "base64url").toString(),
         ).sub;
       } catch {}
-      if (url.pathname === "/rest/v1/rpc/sync_study_progress") {
-        const rows = this.rows(uid),
+      if (["/rest/v1/rpc/sync_study_progress", "/rest/v1/rpc/sync_calculus_progress"].includes(url.pathname)) {
+        const rows = this.rows(url.pathname.endsWith("sync_calculus_progress") ? uid + "/calculus" : uid),
           accepted: string[] = [],
           conflicts: string[] = [];
         for (const change of r.postDataJSON().p_changes) {
@@ -133,7 +133,7 @@ async function device(
     { auth: session(uid), seed },
   );
   const page = await context.newPage();
-  await page.goto("http://127.0.0.1:5175");
+  await page.goto("http://127.0.0.1:5175/#/discrete/course");
   await expect(page.locator(".sync-badge")).toContainText(
     "Прогресс синхронизирован",
   );
@@ -446,7 +446,7 @@ test("вход по email, установка пароля и экспорт н�
   await cloud.install(context);
   const page = await context.newPage();
   try {
-    await page.goto("http://127.0.0.1:5175");
+    await page.goto("http://127.0.0.1:5175/#/discrete/course");
     await settings(page);
     await page.getByLabel("Email", { exact: true }).fill("student@example.com");
     await page
@@ -528,4 +528,35 @@ test("импорт копии добавляет отсутствующие от
   } finally {
     await a.context.close();
   }
+});
+
+
+test("calculus sync merges independent fields on two devices, preserves discrete progress, and resolves a real same-field conflict", async ({ browser }) => {
+  const cloud = new Cloud();
+  const a = await device(browser, cloud), b = await device(browser, cloud);
+  const target = "/#/calculus/definition?item=def-bounds";
+  for (const device of [a, b]) {
+    await device.page.goto("http://127.0.0.1:5175" + target);
+    await expect(device.page.locator(".reading")).toBeVisible();
+  }
+  await a.page.getByRole("button", { name: "Знаю", exact: true }).click();
+  await expect.poll(() => cloud.rows(u1 + "/calculus").get("rating/def-bounds")?.value).toBe("known");
+  await b.page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await expect.poll(() => b.page.evaluate(() => JSON.parse(localStorage.getItem("predel-v1")!).ratings["def-bounds"])).toBe("known");
+  await b.page.locator(".reading textarea").fill("Черновик со второго устройства");
+  await expect.poll(() => cloud.rows(u1 + "/calculus").get("draft/def-bounds")?.value).toBe("Черновик со второго устройства");
+  await a.page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await expect(a.page.locator(".reading textarea")).toHaveValue("Черновик со второго устройства");
+  await b.context.setOffline(true);
+  await b.page.getByRole("button", { name: "Повторить", exact: true }).click();
+  await a.page.getByRole("button", { name: "Частично", exact: true }).click();
+  await expect.poll(() => cloud.rows(u1 + "/calculus").get("rating/def-bounds")?.value).toBe("partial");
+  await b.context.setOffline(false);
+  await b.page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await b.page.locator(".sidebar").getByRole("button", { name: "Синхронизация", exact: true }).click();
+  await expect(b.page.locator('[data-conflict="rating/def-bounds"]')).toBeVisible();
+  await b.page.locator('[data-conflict="rating/def-bounds"]').getByRole("button", { name: "Взять из аккаунта" }).click();
+  await expect.poll(() => b.page.evaluate(() => JSON.parse(localStorage.getItem("predel-v1")!).ratings["def-bounds"])).toBe("partial");
+  expect(cloud.rows(u1).has("rating/def-bounds")).toBe(false);
+  await a.context.close(); await b.context.close();
 });

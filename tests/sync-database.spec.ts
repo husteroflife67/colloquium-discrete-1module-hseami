@@ -141,4 +141,29 @@ test.describe("Supabase migration on PostgreSQL", () => {
       ),
     );
   });
+  test("calculus migration preserves discrete rows and isolates calculus accounts, conflicts and reset tombstones", async () => {
+    await sync(u1, [change("theory/1", { status: "known", review: false })]);
+    const migration = readFileSync("supabase/migrations/202610290001_calculus_progress.sql", "utf8");
+    await db.exec(migration);
+    await db.exec(migration);
+    const calculusSync = (uid: string, changes: any[]) => db.transaction(async tx => {
+      await tx.exec("set local role authenticated");
+      await tx.query("select set_config('request.jwt.claim.sub',$1,true)", [uid]);
+      return (await tx.query<{ data: any }>("select public.sync_calculus_progress($1::jsonb) as data", [JSON.stringify(changes)])).rows[0].data;
+    });
+    const a = change("rating/def-field", "known");
+    const first = await calculusSync(u1, [a]);
+    expect(first.rows[0].revision).toBe(1);
+    expect((await calculusSync(u1, [a])).accepted).toEqual([a.mutation_id]);
+    expect((await calculusSync(u1, [change(a.key, "repeat")])).conflicts).toEqual([a.key]);
+    expect((await calculusSync(u2, [])).rows).toEqual([]);
+    const reset = await calculusSync(u1, [change(a.key, { deleted: true }, 1)]);
+    expect(reset.rows[0].value).toEqual({ deleted: true });
+    expect(reset.rows[0].revision).toBe(2);
+    expect((await sync(u1, [])).rows[0].value).toEqual({ status: "known", review: false });
+    for (const invalid of [change("rating/x", "admin"), change("checklist/9", { values: [] }), change("schedule/x", { due: 2 }), change("history/x", { id: "x" }), change("setting/theme", { deleted: true })]) await expect(calculusSync(u1, [invalid])).rejects.toThrow();
+    await expect(calculusSync("", [])).rejects.toThrow("Authentication required");
+    await expect(db.transaction(async tx => { await tx.exec("set local role anon"); await tx.query("select public.sync_calculus_progress('[]'::jsonb)"); })).rejects.toThrow(/permission denied/i);
+  });
+
 });

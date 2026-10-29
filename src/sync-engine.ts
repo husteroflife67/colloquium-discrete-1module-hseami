@@ -26,7 +26,19 @@ export type SyncSnapshot = {
   conflicts: Conflict[];
   lastSync: number | null;
 };
-const keys = Object.values(localKeys);
+export type SyncCodec = {
+  localKeys: Record<string, string>;
+  journalKey: string;
+  newJournal: typeof newJournal;
+  readJournal: typeof readJournal;
+  flatten: typeof flatten;
+  changesBetween: typeof changesBetween;
+  applyRows: typeof applyRows;
+  validCloudRow: typeof validCloudRow;
+  rpc: string;
+  accountPrefix: string;
+};
+const defaultCodec: SyncCodec = { localKeys, journalKey, newJournal, readJournal, flatten, changesBetween, applyRows, validCloudRow, rpc: "sync_study_progress", accountPrefix: "discrete-account-" };
 export class SyncEngine {
   private journal: Journal = newJournal();
   private userId: string | null = null;
@@ -45,7 +57,8 @@ export class SyncEngine {
     conflicts: [],
     lastSync: null,
   };
-  constructor(private client: SupabaseClient | null) {}
+  private get keys() { return Object.values(this.codec.localKeys); }
+  constructor(private client: SupabaseClient | null, private codec: SyncCodec = defaultCodec) {}
   getSnapshot = () => this.snapshot;
   subscribe = (listener: () => void) => {
     this.listeners.add(listener);
@@ -63,28 +76,28 @@ export class SyncEngine {
     for (const listener of this.listeners) listener();
   }
   private persist() {
-    localStorage.setItem(journalKey, JSON.stringify(this.journal));
+    localStorage.setItem(this.codec.journalKey, JSON.stringify(this.journal));
   }
   private readCache() {
     return Object.fromEntries(
-      keys.map((k) => [k, localStorage.getItem(k)]),
+      this.keys.map((k) => [k, localStorage.getItem(k)]),
     ) as Record<LocalKey, string | null>;
   }
   private writeCache(updates: Partial<Record<LocalKey, string | null>>) {
-    for (const key of keys) {
+    for (const key of this.keys) {
       if (!(key in updates)) continue;
       const value = updates[key];
       if (value == null) localStorage.removeItem(key);
       else localStorage.setItem(key, value);
     }
-    for (const key of keys) if (key in updates) announceProgress(key);
+    for (const key of this.keys) if (key in updates) announceProgress(key);
   }
   start() {
     if (this.started) return;
     this.started = true;
     if (!this.client) return;
     try {
-      this.journal = readJournal();
+      this.journal = this.codec.readJournal();
     } catch {
       this.healthy = false;
       this.update({
@@ -125,9 +138,9 @@ export class SyncEngine {
     }, 350);
   }
   private onWrite = (event: CustomEvent<ProgressWrite>) => {
-    if (!keys.includes(event.detail.key as LocalKey) || !this.healthy) return;
+    if (!this.keys.includes(event.detail.key as LocalKey) || !this.healthy) return;
     try {
-      for (const [key, value] of changesBetween(
+      for (const [key, value] of this.codec.changesBetween(
         event.detail.key,
         event.detail.before,
         event.detail.after,
@@ -179,13 +192,13 @@ export class SyncEngine {
         const previous = this.readCache();
         const oldJournal = this.journal;
         localStorage.setItem(
-          `discrete-account-${this.journal.owner}`,
+          `${this.codec.accountPrefix}${this.journal.owner}`,
           JSON.stringify({ journal: this.journal, cache: previous }),
         );
-        const other = localStorage.getItem(`discrete-account-${id}`);
+        const other = localStorage.getItem(`${this.codec.accountPrefix}${id}`);
         const restored = other ? JSON.parse(other) : null;
         const cache =
-          restored?.cache ?? Object.fromEntries(keys.map((k) => [k, null]));
+          restored?.cache ?? Object.fromEntries(this.keys.map((k) => [k, null]));
         try {
           this.writeCache(cache);
           this.journal = restored?.journal ?? { ...newJournal(), owner: id };
@@ -199,9 +212,9 @@ export class SyncEngine {
       }
       if (!this.journal.owner) {
         this.journal.owner = id;
-        for (const key of keys)
+        for (const key of this.keys)
           for (const [field, value] of Object.entries(
-            flatten(key, localStorage.getItem(key)),
+            this.codec.flatten(key, localStorage.getItem(key)),
           ))
             if (!this.journal.pending[field])
               this.journal.pending[field] = {
@@ -249,7 +262,7 @@ export class SyncEngine {
     this.update({ phase: "syncing", message: "Синхронизируем прогресс" });
     try {
       const { data, error } = await this.client
-        .rpc("sync_study_progress", { p_changes: batch })
+        .rpc(this.codec.rpc, { p_changes: batch })
         .abortSignal(this.controller.signal);
       if (
         generation !== this.generation ||
@@ -261,7 +274,7 @@ export class SyncEngine {
       if (
         !data ||
         !Array.isArray(data.rows) ||
-        !data.rows.every(validCloudRow) ||
+        !data.rows.every(this.codec.validCloudRow) ||
         !Array.isArray(data.accepted) ||
         !Array.isArray(data.conflicts)
       )
@@ -294,7 +307,7 @@ export class SyncEngine {
           c.revision = row.revision;
         }
       }
-      const updates = applyRows(rows, this.journal.pending, this.readCache());
+      const updates = this.codec.applyRows(rows, this.journal.pending, this.readCache());
       this.writeCache(updates);
       this.persist();
       const conflicts = Object.keys(this.journal.conflicts).length;
@@ -337,7 +350,7 @@ export class SyncEngine {
       } else {
         delete this.journal.pending[key];
         this.writeCache(
-          applyRows(
+          this.codec.applyRows(
             [
               {
                 key,

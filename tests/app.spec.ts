@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import course from "../src/data/course.json" with { type: "json" };
 import { sample } from "../src/model";
 test("материалы, поиск, ответы и сохранение прогресса", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/#/discrete/course");
   await expect(
     page.getByRole("heading", { name: "Большие знания. Маленькие шаги." }),
   ).toBeVisible();
@@ -37,7 +37,7 @@ test("материалы, поиск, ответы и сохранение пр�
 test("билет: ограничения, уникальность, скрытые ответы, самооценка и история", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/#/discrete/course");
   await page
     .locator("nav")
     .getByRole("button", { name: "Пробный билет" })
@@ -110,7 +110,7 @@ test("генерация и целостность контента", () => {
 });
 test("мобильный интерфейс и первоисточники", async ({ page, request }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
+  await page.goto("/#/discrete/course");
   await expect(
     page.getByRole("heading", { name: "Большие знания. Маленькие шаги." }),
   ).toBeVisible();
@@ -138,7 +138,7 @@ test("недоступное и повреждённое хранилище", as
   await page.addInitScript(() =>
     localStorage.setItem("discrete-study-v1", "{broken"),
   );
-  await page.goto("/");
+  await page.goto("/#/discrete/course");
   await expect(page.getByRole("alert")).toContainText("Не удалось прочитать");
   await page
     .getByLabel("Статус вопроса 1", { exact: true })
@@ -156,7 +156,7 @@ test("недоступное и повреждённое хранилище", as
 });
 test("настольный интерфейс", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1080 });
-  await page.goto("/");
+  await page.goto("/#/discrete/course");
   await page.screenshot({ path: "/tmp/discrete-desktop.png", fullPage: true });
   expect(
     await page.evaluate(
@@ -170,7 +170,7 @@ test("каждый ответ открывается без ошибок, дли
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
+  await page.goto("/#/discrete/course");
   await page.getByLabel("Открыть вопрос 1", { exact: true }).click();
   for (let n = 1; n <= 46; n++) {
     await page

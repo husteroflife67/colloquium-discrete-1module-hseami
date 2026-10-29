@@ -20,5 +20,15 @@ export default defineConfig(({ mode }) => {
     throw Error(
       "Only a public Supabase Publishable/anon key may be used in a browser build. Remove the private key and rotate it in Supabase.",
     );
-  return { base: env.VITE_BASE_PATH || "/", plugins: [react(), tailwindcss()] };
+  return {
+    base: env.VITE_BASE_PATH || "/", plugins: [react(), tailwindcss()],
+    build: { rolldownOptions: { output: { codeSplitting: { groups: [
+      { name: "calculus-definitions", test: /src\/calculus\/content\/official-definitions/ , priority: 20 },
+      { name: "calculus-content", test: /src\/calculus\/content/ },
+      { name: "discrete-course", test: /src\/data\/course\.json/ },
+      { name: "discrete-practice", test: /src\/data\/practice\.json/ },
+      { name: "discrete-plan", test: /src\/data\/preparation-plan\.json/ },
+      { name: "vendor", test: /node_modules/ },
+    ] } } } },
+  };
 });

@@ -8,7 +8,7 @@ import {
   planStorageKey,
 } from "../src/plan-model";
 async function openPlan(page: any) {
-  await page.goto("/");
+  await page.goto("/#/discrete/course");
   await page
     .locator("nav")
     .getByRole("button", { name: "План подготовки", exact: true })
@@ -134,7 +134,7 @@ test("чекбоксы, этап и общий прогресс сохраняю
 test("ссылки открывают точную теорию и задачу с возвратом к пункту; просмотр ничего не отмечает", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/#/discrete/course");
   await page
     .getByLabel("Статус вопроса 1", { exact: true })
     .selectOption("known");
@@ -261,7 +261,7 @@ test("маршрут удобен на телефоне и не растягив
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
+  await page.goto("/#/discrete/course");
   await page.getByRole("button", { name: "Открыть меню" }).click();
   await page
     .locator("nav")
